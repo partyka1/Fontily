@@ -11,14 +11,14 @@
     {
       "script" : "fontily.cocoascript",
       "handler" : "showFontLayers",
-      "shortcut" : "command g",
+      "shortcut" : "",
       "name" : "List fonts used",
       "identifier" : "showFontLayers"
     },
     {
       "script" : "fontily.cocoascript",
       "handler" : "requestFeature",
-      "shortcut" : "command l",
+      "shortcut" : "",
       "name" : "Request new feature",
       "identifier" : "requestFeature"
     },
