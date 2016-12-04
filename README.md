@@ -10,3 +10,14 @@ Fontily will list all the fonts in document, and allow you to change selected on
 Shortcut: `cmd+g`
 
 ![Screenshot](http://partyka.io/fontily/screenshot0.png)
+
+
+## List fonts
+
+List all the fonts in document.
+
+![Screenshot](http://partyka.io/fontily/screenshot2.png)
+
+## Contribute
+
+If you have ideas how to make this plugin better or found an error, create an issue or email me at maciek@partyka.io
