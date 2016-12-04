@@ -1,0 +1,422 @@
+/**
+ * Entry point for font replacer
+ * @param context
+ */
+function replaceMissingFonts(context) {
+    var result = findFontLayers(context);
+    openReplacerDialog(context, result.fonts, result.count);
+}
+
+/**
+ * Entry point for font lister
+ * @param context
+ */
+function showFontLayers(context) {
+    var result = findFontLayers(context);
+    var textLayers = result.fonts;
+    var foundCount = result.count;
+    var fontKeys = [];
+
+    // Create the interface
+    var modal = createUserInterface();
+    // Show it and process the form
+    modal.runModal();
+
+    function createUserInterface() {
+        var userInterface = COSAlertWindow.new();
+        // Title
+        userInterface.setMessageText('Font Lister');
+
+        if (foundCount == 0) {
+            userInterface.setInformativeText('This page dosen\'t have any fonts.');
+            userInterface.addButtonWithTitle('OK');
+        } else {
+            for (var font_name in textLayers) {
+                print(font_name);
+                if (textLayers.hasOwnProperty(font_name) == false) {
+                    continue;
+                }
+                var isMissing = textLayers[font_name].isMissing;
+                var small_label = 'Font "' + font_name + '"';
+                if (isMissing) {
+                    small_label = small_label + ', missing!';
+                }
+                userInterface.addAccessoryView(createLabel(small_label, null, isMissing ? colorFromRGB(255, 0, 0) : colorFromRGB(150, 150, 150)));
+                userInterface.addAccessoryView(createLabel('Found at ' + textLayers[font_name].layers.length + ' layers', null, isMissing ? colorFromRGB(255, 0, 0) : colorFromRGB(150, 150, 150)));
+                userInterface.addAccessoryView(createFontList(textLayers[font_name].layers));
+            }
+            userInterface.addButtonWithTitle('Select');
+            userInterface.addButtonWithTitle('Cancel');
+        }
+
+        return userInterface;
+    }
+}
+
+/**
+ * Entry point for feature requests
+ * @param context
+ */
+function requestFeature(context) {
+
+    // Create the interface
+    var emailInput = null, msgInput = null;
+    var modal = createUserInterface();
+    // Show it and process the form
+    handleAlertResponse(modal, modal.runModal());
+
+    function createUserInterface() {
+        var userInterface = COSAlertWindow.new();
+
+        userInterface.setMessageText('Request new feature');
+        userInterface.setInformativeText("Didn't found what you were looking for? No problem! Write it down, and I will try to implement it in the nearest version of Fontily :)");
+
+        userInterface.addTextLabelWithValue("Contact Email (optional)");
+        userInterface.addAccessoryView(emailInput = createTextInput(1, "john.appleseed@sketchapp.com").input);
+
+        var msg = createTextInput(5);
+        msgInput = msg.input;
+        userInterface.addTextLabelWithValue("Feature description");
+        userInterface.addAccessoryView(msg.scroller);
+
+        userInterface.addButtonWithTitle('OK');
+        userInterface.addButtonWithTitle('Cancel');
+
+        emailInput.setNextKeyView(msgInput);
+
+        return userInterface;
+    }
+
+    /**
+     * Collect user input from alert window
+     * @param  {COSAlertWindow} alert             The alert window
+     * @param  {Int}            responseCode      Alert window response code
+     * @return {Object}                           Alert window results
+     */
+    function handleAlertResponse(alert, responseCode) {
+        if (responseCode == "1000") {
+            var query = [];
+            query.push(["email", encodeURIComponent(emailInput.stringValue())].join('='));
+            query.push(["msg", encodeURIComponent(msgInput.textStorage().string())].join('='));
+            var response = httpRequest("http://partyka.io/fontily/request.php?" + query.join('&'));
+
+            var success;
+            try {
+                response = JSON.parse(response);
+                success = response.success;
+            } catch (e) {
+                success = "no";
+            }
+            var userInterface = COSAlertWindow.new();
+
+            userInterface.setMessageText('Request new feature');
+            var text = "";
+            if (success == "yes") {
+                text = "Thank you for your input! Message has been sent.";
+            } else {
+                text = "There was a problem submitting your request, message has not been sent.\r\n\r\nTry again soon, or write me at maciek@partyka.io";
+            }
+            userInterface.setInformativeText(text);
+
+            userInterface.addButtonWithTitle('Close');
+            userInterface.runModal();
+
+        }
+        return null;
+    }
+}
+
+function httpRequest(queryURL) {
+    var request = NSMutableURLRequest.new();
+    request.setHTTPMethod("GET");
+    request.setURL(NSURL.URLWithString(queryURL));
+
+    var error = NSError.new();
+    var responseCode = null;
+
+    var oResponseData = NSURLConnection.sendSynchronousRequest_returningResponse_error_(request, responseCode, error);
+
+    var dataString = NSString.alloc().initWithData_encoding_(oResponseData, NSUTF8StringEncoding);
+    print("["+Date.now()+"] "+dataString);
+    return dataString;
+}
+/**
+ * Iterates over all document, looking for text layers. Saves font, and checks whether it may be missing.
+ * @param context
+ * @returns {{fonts: {}, count: number}}
+ */
+function findFontLayers(context) {
+    var doc = context.document;
+    var pages = doc.pages();
+    var page, textLayer, foundFonts = {}, count = 0;
+
+    var loop = pages.objectEnumerator();
+    while (page = loop.nextObject()) {
+        var scope = page.children();
+        var predicate = NSPredicate.predicateWithFormat("className == %@", 'MSTextLayer');
+        var queryResult = scope.filteredArrayUsingPredicate(predicate);
+        if (queryResult.count() > 0) {
+            var loop2 = queryResult.objectEnumerator();
+            while (textLayer = loop2.nextObject()) {
+                var text = textLayer.stringValue();
+                var font = textLayer.fontPostscriptName();
+                if (typeof foundFonts[font] == "undefined") {
+                    foundFonts[font] = {layers: [], isMissing: !textLayer.canScale()};
+                    count += 1;
+                }
+                foundFonts[font].layers.push(textLayer);
+            }
+        }
+    }
+    return {fonts: foundFonts, count: count};
+}
+
+/**
+ * Get system fonts
+ * @return {Array}
+ */
+function getFonts() {
+    var fontManager = NSFontManager.sharedFontManager();
+    var fonts = [];
+    var sys_fonts = fontManager.availableFonts();
+    //has to convert them to normal array, as {sys_fonts} is array-like object, and is persistent, so when modified, changes stay between runs of script
+    for (var i = 0; i < sys_fonts.length; ++i) {
+        fonts.push(sys_fonts[i]);
+    }
+    return fonts;
+}
+
+/**
+ * Create Select Box for dialog window
+ * @param  {Array}      options           Options for the select
+ * @param  {Int}        selectedItem Default selected item
+ * @return {NSComboBox}                   Complete select box
+ */
+function createSelect(options, selectedItem) {
+    var selectedItemIndex = 0;
+    for (var i = 0; i < options.length; ++i) {
+        if (options[i] == selectedItem) {
+            selectedItemIndex = i;
+            break;
+        }
+    }
+    var select = NSComboBox.alloc().initWithFrame(NSMakeRect(0, 0, 200, 25));
+    select.addItemsWithObjectValues(options);
+    select.selectItemAtIndex(selectedItemIndex);
+    select.setNumberOfVisibleItems(20);
+
+    return select;
+}
+
+/**
+ * Creates custom NSTextField
+ * @param text
+ * @param size - font size
+ * @param color - nscolor
+ * @param rect_height
+ * @returns {*}
+ */
+function createLabel(text, size, color, rect_height) {
+    var tf = NSTextField.alloc().initWithFrame(NSMakeRect(0, 0, 300, typeof rect_height == "undefined" ? 16 : rect_height));
+
+    tf.setDrawsBackground(false);
+    tf.setEditable(false);
+    tf.setBezeled(false);
+    tf.setSelectable(false);
+    if (typeof color != "undefined") {
+        tf.setTextColor(color);
+    }
+    if (typeof size != "undefined") {
+        tf.setFont(NSFont.systemFontOfSize(size));
+    }
+    tf.setStringValue(text);
+    return tf;
+}
+
+/**
+ * Creates NSScrollView with textview inside it.
+ * @param text
+ * @param size
+ * @param color
+ * @param rect_height
+ * @returns {*}
+ */
+function createScroll(text, size, color, rect_height, tf) {
+    var scrollview = NSScrollView.alloc().initWithFrame(NSMakeRect(0, 0, 300, 100));
+    var contentSize = scrollview.contentSize();
+
+    //scrollview.setBorderType(NSGrooveBorder);
+    scrollview.setBorderType(NSBezelBorder);
+    scrollview.setHasVerticalScroller(true);
+    scrollview.setHasHorizontalScroller(false);
+    if (typeof tf == "undefined") {
+        tf = createTextView(text, size, color, rect_height);
+    }
+    tf.setMinSize(NSMakeSize(0, contentSize.height));
+
+    tf.setVerticallyResizable(true);
+    tf.setHorizontallyResizable(false);
+    tf.setAutoresizingMask(NSViewWidthSizable);
+    scrollview.setDocumentView(tf);
+    return scrollview;
+}
+
+/**
+ * Creates NSTextView
+ * @param text
+ * @param size
+ * @param color
+ * @param rect_height
+ * @returns {*}
+ */
+function createTextView(text, size, color, rect_height) {
+    var tf = NSTextView.alloc().initWithFrame(NSMakeRect(0, 0, 300, typeof rect_height == "undefined" ? 16 : rect_height));
+
+    if (typeof color != "undefined") {
+        tf.setTextColor(color);
+    }
+    if (typeof size != "undefined") {
+        tf.setFont(NSFont.systemFontOfSize(size));
+    }
+    tf.setString(text);
+    return tf;
+}
+
+
+/**
+ * Creates NSTextView
+ * @param text
+ * @param size
+ * @param color
+ * @param rect_height
+ * @returns {*}
+ */
+function createTextInput(rows, placeholder) {
+    if (typeof rows == "undefined") {
+        rows = 1;
+    }
+    var multiline = rows > 1;
+    var tf = null;
+    if (multiline) {
+        tf = NSTextView.alloc().initWithFrame(NSMakeRect(0, 0, 300, rows * 16));
+    } else {
+        tf = NSTextField.alloc().initWithFrame(NSMakeRect(0, 0, 300, 24));
+        if (typeof placeholder == "string") {
+            tf.cell().setPlaceholderString(placeholder);
+        }
+    }
+    if (multiline) {
+        return {input: tf, scroller: createScroll("", undefined, undefined, 100, tf)};
+    } else {
+        return {input: tf, scroller: null};
+    }
+}
+
+/**
+ * Creates NSScrollView with text layers' names inside it.
+ * @param layers
+ * @returns {*}
+ */
+function createFontList(layers) {
+    var text = "";
+    for (var index = 0; index < layers.length; ++index) {
+        text += "Layer: " + layers[index].name() + "\r\n";
+    }
+    return createScroll(text, undefined, undefined, 100);
+}
+
+/**
+ * Create NSColor
+ * @param r
+ * @param g
+ * @param b
+ * @returns {*}
+ */
+function colorFromRGB(r, g, b) {
+    return NSColor.colorWithDeviceRed_green_blue_alpha_(r / 255.0, g / 255.0, b / 255.0, 1);
+}
+
+/**
+ * Opens main dialog, which allows user to select which fonts to replace
+ * @param context
+ * @param textLayers
+ * @param foundCount
+ */
+function openReplacerDialog(context, textLayers, foundCount) {
+    var fontKeys = [];
+    var inputs = [];
+    var SELECT_FONT_LABEL = "Select font...";
+
+    // Create the interface
+    var modal = createUserInterface();
+    // Show it and process the form
+    handleAlertResponse(modal, modal.runModal());
+
+    function createUserInterface() {
+        var avail_fonts = getFonts();
+        avail_fonts.unshift(SELECT_FONT_LABEL);
+        var userInterface = COSAlertWindow.new();
+        // Title
+        userInterface.setMessageText('Font Replacer');
+
+        if (foundCount == 0) {
+            userInterface.setInformativeText('No fonts found.');
+            userInterface.addButtonWithTitle('OK');
+        } else {
+            userInterface.setInformativeText('Select new fonts:');
+            for (var font_name in textLayers) {
+                if (textLayers.hasOwnProperty(font_name) == false) {
+                    continue;
+                }
+                fontKeys.push(font_name);
+                var isMissing = textLayers[font_name].isMissing;
+                var label = 'New font for "' + font_name + '":';
+                var select_input = createSelect(avail_fonts, font_name);
+                inputs.push(select_input);
+                userInterface.addTextLabelWithValue(label);
+
+                userInterface.addAccessoryView(select_input);
+
+                var small_label = 'Found at ' + textLayers[font_name].layers.length + ' layers';
+                if (isMissing) {
+                    small_label = 'Missing font! ' + small_label;
+                }
+                userInterface.addAccessoryView(createFontList(textLayers[font_name].layers));
+                userInterface.addAccessoryView(createLabel(small_label, 10, isMissing ? colorFromRGB(255, 0, 0) : colorFromRGB(150, 150, 150)));
+            }
+            userInterface.addButtonWithTitle('Replace');
+            userInterface.addButtonWithTitle('Cancel');
+        }
+
+        return userInterface;
+    }
+
+    /**
+     * Collect user input from alert window
+     * @param  {COSAlertWindow} alert             The alert window
+     * @param  {Int}            responseCode      Alert window response code
+     * @return {Object}                           Alert window results
+     */
+    function handleAlertResponse(alert, responseCode) {
+        if (responseCode == "1000") {
+            for (var i = 0; i < foundCount; ++i) {
+                var new_font = inputs[i].stringValue();
+                if (new_font == SELECT_FONT_LABEL) {
+                    continue;
+                }
+                var key = fontKeys[i];
+                var layers = textLayers[key].layers;
+                if (new_font == key) {
+                    continue;
+                }
+                print("Replacing: " + key + "->" + new_font);
+                for (var f = 0; f < layers.length; ++f) {
+                    var layer = layers[f];
+                    layer.setFontPostscriptName(new_font);
+                }
+            }
+        }
+
+        return null;
+    }
+}

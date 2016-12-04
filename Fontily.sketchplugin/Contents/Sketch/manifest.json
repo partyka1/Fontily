@@ -1,0 +1,39 @@
+{
+  "author" : "Maciej Partyka",
+  "commands" : [
+    {
+      "script" : "fontily.cocoascript",
+      "handler" : "replaceMissingFonts",
+      "shortcut" : "command p",
+      "name" : "Find & Replace Fonts",
+      "identifier" : "replaceMissingFonts"
+    },
+    {
+      "script" : "fontily.cocoascript",
+      "handler" : "showFontLayers",
+      "shortcut" : "command g",
+      "name" : "List fonts used",
+      "identifier" : "showFontLayers"
+    },
+    {
+      "script" : "fontily.cocoascript",
+      "handler" : "requestFeature",
+      "shortcut" : "command l",
+      "name" : "Request new feature",
+      "identifier" : "requestFeature"
+    },
+  ],
+  "menu": {
+    "items": [
+      "replaceMissingFonts",
+      "showFontLayers",
+      "-",
+      "requestFeature"
+    ],
+  },
+  "identifier" : "com.sketchapp.partyka.fontily",
+  "version" : "1.0",
+  "description" : "Missing sketch plugin for replacing fonts",
+  "authorEmail" : "maciek@partyka.io",
+  "name" : "Fontily"
+}
