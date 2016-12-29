@@ -197,9 +197,9 @@ function openFontilyDialog(context, textLayers, foundCount, enableReplace) {
                 scroll: {height: 300},
                 missingLabel: {height: 12, fontSize: 9}
             };
-            if(!enableReplace){
-                sizes.leftCol.width=300;
-                sizes.rightCol.width=200;
+            if (!enableReplace) {
+                sizes.leftCol.width = 300;
+                sizes.rightCol.width = 200;
             }
             //calculate modal width based on given constraints
             sizes.section = {
@@ -230,12 +230,12 @@ function openFontilyDialog(context, textLayers, foundCount, enableReplace) {
 
                 if (textLayer.isMissing) {
                     //missing label
-                    scrollContent.add(Layout.createLabel('Missing font! ', sizes.missingLabel.fontSize, colorFromRGB(255, 0, 0), null,sizes.missingLabel.height));
+                    scrollContent.add(Layout.createLabel('Missing font! ', sizes.missingLabel.fontSize, colorFromRGB(255, 0, 0), null, sizes.missingLabel.height));
                     ++countMissing;
                 }
 
                 //Header section
-                fontHeader.add(Layout.createLabel((enableReplace ? 'Change font for "' + font_name + '"' : 'Font "' + font_name + '"'), 12, textLayer.isMissing ? colorFromRGB(255, 0, 0) : undefined,  sizes.leftCol.width,"auto"), "absolute/resize");
+                fontHeader.add(Layout.createLabel((enableReplace ? 'Change font for "' + font_name + '"' : 'Font "' + font_name + '"'), 12, textLayer.isMissing ? colorFromRGB(255, 0, 0) : undefined, sizes.leftCol.width, "auto"), "absolute/resize");
                 fontHeader.add(Layout.setPos(Layout.createLabel('Layers that use this font (' + textLayers[font_name].layers.length + ' in total)', 10, colorFromRGB(150, 150, 150)), sizes.leftCol.width + sizes.rightCol.marginLeft, -2), "absolute");
 
                 //Main section
@@ -264,7 +264,7 @@ function openFontilyDialog(context, textLayers, foundCount, enableReplace) {
             }
 
             modal.setInformativeText('Found ' + foundCount + ' fonts' + (countMissing > 0 ? ', ' + countMissing + ' missing' : ''));
-            modal.addButtonWithTitle('Replace');
+            modal.addButtonWithTitle(enableReplace ? 'Replace' : 'OK');
             modal.addButtonWithTitle('Cancel');
 
             scrollView.setDocumentView(scrollContent.view());
@@ -284,6 +284,9 @@ function openFontilyDialog(context, textLayers, foundCount, enableReplace) {
      * @return {Object}                           Alert window results
      */
     function handleAlertResponse(alert, responseCode) {
+        if (!enableReplace) {
+            return;
+        }
         if (responseCode == "1000") {
             for (var i = 0; i < foundCount; ++i) {
                 var new_font = inputs[i].stringValue();
@@ -302,7 +305,5 @@ function openFontilyDialog(context, textLayers, foundCount, enableReplace) {
                 }
             }
         }
-
-        return null;
     }
 }
