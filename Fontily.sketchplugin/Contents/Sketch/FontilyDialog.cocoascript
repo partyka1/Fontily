@@ -1,0 +1,22 @@
+function FontilyDialog(title) {
+    this.alert = NSAlert.alloc().init();
+    this.alert.setAlertStyle(NSWarningAlertStyle);
+    if (title) {
+        this.setMessageText(title);
+    }
+};
+FontilyDialog.prototype.setMessageText = function (text) {
+    this.alert.setMessageText(text);
+};
+FontilyDialog.prototype.setInformativeText = function (text) {
+    this.alert.setInformativeText(text);
+};
+FontilyDialog.prototype.addButtonWithTitle = function (text) {
+    this.alert.addButtonWithTitle(text);
+};
+FontilyDialog.prototype.addAccessoryView = function (view) {
+    this.alert.setAccessoryView(view);
+};
+FontilyDialog.prototype.runModal = function () {
+    return this.alert.runModal();
+};
