@@ -9,14 +9,21 @@ Fontily will list all the fonts in document, and allow you to change selected on
 
 Shortcut: `cmd+g`
 
-![Screenshot](http://partyka.io/fontily/screenshot0.png)
+![Screenshot](http://partyka.io/fontily/screenshot11_a.png)
 
 
 ## List fonts
 
 List all the fonts in document.
 
-![Screenshot](http://partyka.io/fontily/screenshot2.png)
+![Screenshot](http://partyka.io/fontily/screenshot11_b.png)
+
+## Installation
+
+Make sure you have the latest version of Sketch 3 installed.
+
+1. [Download the ZIP file of this repository](https://github.com/partyka1/Fontily/archive/master.zip)
+2. Double click on `Fontily.sketchplugin`
 
 ## Contribute
 
