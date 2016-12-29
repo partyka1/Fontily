@@ -240,7 +240,7 @@ function openFontilyDialog(context, textLayers, foundCount, enableReplace) {
 
                 //Main section
                 if (enableReplace) {
-                    selectReplaceInput = Layout.createSelect(avail_fonts);
+                    selectReplaceInput = Layout.createSelect(avail_fonts, font_name);
                     fontSection.add(selectReplaceInput);
                     fontSection.add(Layout.setPos(Layout.createFontList(textLayers[font_name].layers, true), sizes.leftCol.width + sizes.rightCol.marginLeft, 0), "absolute/resize");
                 } else {

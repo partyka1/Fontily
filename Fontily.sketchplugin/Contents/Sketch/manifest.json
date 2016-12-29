@@ -32,7 +32,7 @@
     ],
   },
   "identifier" : "com.sketchapp.partyka.fontily",
-  "version" : "1.0",
+  "version" : "1.1",
   "description" : "Missing sketch plugin for replacing fonts",
   "authorEmail" : "maciek@partyka.io",
   "name" : "Fontily"
