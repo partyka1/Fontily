@@ -83,7 +83,6 @@ var Layout = {
         if (useScroll) {
             return Layout.createScroll(text, 12, undefined, 150, tf);
         } else {
-            tf.setBackgroundColor(colorFromRGB(236, 236, 236));
             tf.setTextColor(colorFromRGB(100, 100, 100));
 
             return tf;
@@ -172,7 +171,6 @@ var Layout = {
         scrollview.setHasHorizontalScroller(false);
         scrollview.setDrawsBackground(true);
         scrollview.setAutoresizingMask(NSViewWidthSizable | NSViewHeightSizable);
-        scrollview.setBackgroundColor(colorFromRGB(236, 236, 236));
         return scrollview;
     },
 
