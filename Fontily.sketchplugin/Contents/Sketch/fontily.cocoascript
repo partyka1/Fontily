@@ -1,6 +1,7 @@
 @import "FontilyDialog.cocoascript";
 @import "Layout.cocoascript";
 @import "LayoutView.cocoascript";
+@import "colorScheme.cocoascript";
 
 /**
  * Entry point for font replacer
@@ -154,17 +155,6 @@ function getFonts() {
 }
 
 /**
- * Create NSColor
- * @param r
- * @param g
- * @param b
- * @returns {*}
- */
-function colorFromRGB(r, g, b) {
-    return NSColor.colorWithDeviceRed_green_blue_alpha_(r / 255.0, g / 255.0, b / 255.0, 1);
-}
-
-/**
  * Opens main dialog, which allows user to select which fonts to replace
  * @param context
  * @param textLayers
@@ -230,13 +220,13 @@ function openFontilyDialog(context, textLayers, foundCount, enableReplace) {
 
                 if (textLayer.isMissing) {
                     //missing label
-                    scrollContent.add(Layout.createLabel('Missing font! ', sizes.missingLabel.fontSize, colorFromRGB(255, 0, 0), null, sizes.missingLabel.height));
+                    scrollContent.add(Layout.createLabel('Missing font! ', sizes.missingLabel.fontSize, colorScheme.warning, null, sizes.missingLabel.height));
                     ++countMissing;
                 }
 
                 //Header section
-                fontHeader.add(Layout.createLabel((enableReplace ? 'Change font for "' + font_name + '"' : 'Font "' + font_name + '"'), 12, textLayer.isMissing ? colorFromRGB(255, 0, 0) : undefined, sizes.leftCol.width, "auto"), "absolute/resize");
-                fontHeader.add(Layout.setPos(Layout.createLabel('Layers that use this font (' + textLayers[font_name].layers.length + ' in total)', 10, colorFromRGB(150, 150, 150)), sizes.leftCol.width + sizes.rightCol.marginLeft, -2), "absolute");
+                fontHeader.add(Layout.createLabel((enableReplace ? 'Change font for "' + font_name + '"' : 'Font "' + font_name + '"'), 12, textLayer.isMissing ? colorScheme.warning : undefined, sizes.leftCol.width, "auto"), "absolute/resize");
+                fontHeader.add(Layout.setPos(Layout.createLabel('Layers that use this font (' + textLayers[font_name].layers.length + ' in total)', 10, colorScheme.textSecondary), sizes.leftCol.width + sizes.rightCol.marginLeft, -2), "absolute");
 
                 //Main section
                 if (enableReplace) {
