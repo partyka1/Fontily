@@ -1,0 +1,31 @@
+var UI = require('sketch/ui');
+
+/**
+ * Create NSColor
+ * @param r
+ * @param g
+ * @param b
+ * @returns {*}
+ */
+function colorFromRGB(r, g, b) {
+    return NSColor.colorWithDeviceRed_green_blue_alpha_(r / 255.0, g / 255.0, b / 255.0, 1);
+}
+
+var theme = UI.getTheme() || 'light';
+
+var ColorSchemes = {
+  dark: {
+    bg: colorFromRGB(50, 50, 50),
+    text: colorFromRGB(200, 200, 200),
+    textSecondary: colorFromRGB(180, 180, 180),
+    warning: colorFromRGB(240, 107, 65),
+  },
+  light: {
+    bg: colorFromRGB(236, 236, 236)),
+    text: colorFromRGB(100, 100, 100),
+    textSecondary: colorFromRGB(150, 150, 150),
+    warning: colorFromRGB(255, 0, 0),
+  },
+};
+
+var colorScheme = ColorSchemes[theme];

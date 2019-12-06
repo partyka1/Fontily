@@ -1,3 +1,5 @@
+@import "colorScheme.cocoascript";
+
 var Layout = {
     setPos: function (view, x, y) {
         var f = view.frame();
@@ -83,8 +85,8 @@ var Layout = {
         if (useScroll) {
             return Layout.createScroll(text, 12, undefined, 150, tf);
         } else {
-            tf.setTextColor(colorFromRGB(100, 100, 100));
-
+            tf.setBackgroundColor(colorScheme.bg);
+            tf.setTextColor(colorScheme.text);
             return tf;
         }
     },
@@ -171,6 +173,7 @@ var Layout = {
         scrollview.setHasHorizontalScroller(false);
         scrollview.setDrawsBackground(true);
         scrollview.setAutoresizingMask(NSViewWidthSizable | NSViewHeightSizable);
+        scrollview.setBackgroundColor(colorScheme.bg);
         return scrollview;
     },
 
